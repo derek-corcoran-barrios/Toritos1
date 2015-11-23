@@ -1,0 +1,16 @@
+base
+rJava
+glmulti
+ggplot2
+knitr
+MASS
+lattice
+pscl
+sp
+maptools
+ggmap
+gridExtra
+agricolae
+stargazer
+maps
+mapproj

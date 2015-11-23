@@ -1,0 +1,174 @@
+---
+title: "Toritos"
+author: "Derek Corcoran"
+date: "November 22, 2015"
+output: html_document
+---
+
+#Toritos
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+setwd("/home/derek/Documents/Toritos1/Toritos")
+library(glmulti)
+library(ggplot2)
+library(knitr)
+library(pscl)
+library(maptools)
+library(ggmap)
+library(grid)
+library(gridExtra)
+library(agricolae)
+library(stargazer)
+```
+
+Metemos los datos
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+regresion.toritos <- read.csv("~/Documents/Toritos1/Toritos/regresion.toritos.csv")
+
+Toritos <- read.csv("~/Documents/Toritos1/Toritos/Toritos.csv")
+
+Toritos3 <- read.csv("~/Documents/Toritos1/Toritos/Toritos3.csv")
+```
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+panel.hist <- function(x, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- cor(x, y)
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+pairs(regresion.toritos, diag.panel = panel.hist, lower.panel = panel.smooth, upper.panel = panel.cor)
+```
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+means.toritos=c(351.7441, 482.8687, 485.8114, 665.3333)
+toritos.plot <- barplot(means.toritos, ylim=c(0, 900), xlab="Treatment", ylab="Dry matter per hectare [kg DM/ha]")
+axis(1, labels=c("Control-", "Control+", "Treat1", "Treat2"), at = toritos.plot)
+stDevs.t <- matrix(c(110.6971, 52.93513, 52.44917, 132.36302),4)
+segments(toritos.plot, means.toritos - stDevs.t, toritos.plot, means.toritos + stDevs.t, lwd=2)
+segments(toritos.plot - 0.1, means.toritos - stDevs.t, toritos.plot + 0.1, means.toritos - stDevs.t, lwd=2)
+segments(toritos.plot - 0.1, means.toritos + stDevs.t, toritos.plot + 0.1, means.toritos + stDevs.t, lwd=2)
+text(0.7, 510, "a", cex=1.2)
+text(1.9, 580, "a", cex=1.2)
+text(3.12, 580, "ab", cex=1.2)
+text(4.31, 840, "b", cex=1.2)
+```
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+glm.toritos.abundancia<-glm(Abundancia.Esfuerzo. ~ Carga + Peso.Fresco.Fecas.carga + Pendiente + Dias.desde.que.se.fueron.ovinos + I(Carga^2) + I(Peso.Fresco.Fecas.carga^2) + I(Pendiente^2) + I(Dias.desde.que.se.fueron.ovinos^2), data= regresion.toritos)
+
+glm.toritos.abundancia.carga<- glm(Abundancia.Esfuerzo.carga. ~ Carga + Peso.Fresco.Fecas.carga + Pendiente + Dias.desde.que.se.fueron.ovinos + I(Carga^2) + I(Peso.Fresco.Fecas.carga^2) + I(Pendiente^2) + I(Dias.desde.que.se.fueron.ovinos^2), data= regresion.toritos)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+best.glm.abundancia <- glmulti(glm.toritos.abundancia , level = 1, method = "h", crit = "aicc", confsetsize = 5, plotty = FALSE, report = FALSE, chunks=3)
+
+best.glm.abundancia.carga <- glmulti(glm.toritos.abundancia.carga , level = 1, method = "h", crit = "aicc", confsetsize = 5, plotty = FALSE, report = FALSE, chunks=3)
+```
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+kable(weightable(best.glm.abundancia))
+
+kable(weightable(best.glm.abundancia.carga))
+```
+
+```{r, echo= FALSE, cache=TRUE}
+ggplot(regresion.toritos, aes(Abundancia.Esfuerzo.carga., Peso.Fresco.Fecas.carga))+theme_bw()+geom_smooth(method="lm", colour= "black")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
+
+ggplot(regresion.toritos, aes(Abundancia.Esfuerzo.carga., Peso.Fresco.Fecas.carga))+geom_point()+theme_bw()+geom_smooth(method="lm", colour= "black")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
+
+ggplot(regresion.toritos, aes(Abundancia.Esfuerzo., Peso.Fresco.Fecas.carga))+geom_point()+theme_bw()+geom_smooth(method="lm", colour= "black")+labs(x="Beetle abundance/traping effort ", y="Dung weight/stocking rate")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
+
+```
+
+```{r, echo= FALSE, cache=TRUE, results='asis'}
+summary(glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+best.glm<-glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
+best.glm2<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Peso.Fresco.Fecas.carga^2), data = regresion.toritos)
+
+best.glm3<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Dias.desde.que.se.fueron.ovinos^2), data = regresion.toritos)
+
+stargazer(best.glm, best.glm2, best.glm3, title="Results", align=TRUE, type="html")
+
+pR2(glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+
+summary(lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+
+Toritos.lm<-lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
+
+stargazer(Toritos.lm, title="Results", align=TRUE, type="html")
+
+S1T1<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S1T1.kml")
+S1T2<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S1T2.kml")
+S1T3<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S1T3.kml")
+S2T1<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S2T1.kml")
+S2T2<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S2T2.kml")
+S2T3<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S2T3.kml")
+S3T3<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S3T3.kml")
+S3T1<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S3T1.kml")
+S3T2<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S3T2.kml")
+
+a<-data.frame(S1T1)
+S1T2<-data.frame(S1T2)
+S1T3<-data.frame(S1T3)
+S2T1<-data.frame(S2T1)
+S2T2<-data.frame(S2T2)
+S2T3<-data.frame(S2T3)
+S3T3<-data.frame(S3T3)
+S3T1<-data.frame(S3T1)
+S3T2<-data.frame(S3T2)
+
+a<-rbind(a, S1T2, S1T3, S2T1, S2T2, S2T3, S3T3, S3T1, S3T2)
+kable(a)
+
+mymap<- get_map(location = c(lon = -69, lat = -53.5), zoom = 7, maptype = "toner")
+
+mymap <-ggmap(mymap)+ geom_point(aes(x = X1, y = X2), data = S3T3, color="black")
+mymap
+
+mymap1<- get_map(location = c(lon = -69.08, lat = -53.03), zoom = 10, maptype = "terrain", color = "bw")
+mymap1<-ggmap(mymap1)+ geom_point(aes(x = X1, y = X2), data = a, color="black")
+
+#inset_raster(mymap, xmin = -69, xmax = -68.7, ymin = -52.95, ymax = -52.75)
+```
+
+```{r, echo= FALSE, cache=TRUE}
+
+grid.newpage()
+v1<-viewport(width = 1, height = 1, x = 0.5, y = 0.5) #plot area for the main map
+v2<-viewport(width = 0.4, height = 0.4, x = 0.77, y = 0.26) #plot area for the inset map
+print(mymap1,vp=v1) 
+print(mymap,vp=v2)
+
+```
+
+```{r, echo= FALSE, cache=TRUE}
+
+exit_bugs<-aov(Peso.pasto~Tratamiento, data=Toritos3)
+
+summary(exit_bugs)
+
+shapiro.test(exit_bugs$residuals)
+
+bartlett.test(Peso.pasto~Tratamiento, data=Toritos3)
+
+print(HSD.test(Toritos3$Peso.pasto, Toritos3$Tratamiento, 16, 8832, alpha = 0.05, group=TRUE))
+
+```
