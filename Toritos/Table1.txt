@@ -3,19 +3,19 @@ Results
 ===================================================
                             Dependent variable:    
                         ---------------------------
-                        Abundancia.Esfuerzo.carga. 
+                           Abundancia.Esfuerzo.    
 ---------------------------------------------------
-Peso.Fresco.Fecas.carga          -0.039**          
-                                  (0.015)          
+Peso.Fresco.Fecas.carga          -2.038**          
+                                  (0.684)          
                                                    
-Constant                         0.004***          
-                                  (0.001)          
+Constant                         0.202***          
+                                  (0.042)          
                                                    
 ---------------------------------------------------
 Observations                         9             
-R2                                 0.500           
-Adjusted R2                        0.429           
-Residual Std. Error           0.002 (df = 7)       
-F Statistic                 7.003** (df = 1; 7)    
+R2                                 0.559           
+Adjusted R2                        0.496           
+Residual Std. Error           0.091 (df = 7)       
+F Statistic                 8.877** (df = 1; 7)    
 ===================================================
 Note:                   *p<0.1; **p<0.05; ***p<0.01

@@ -91,30 +91,25 @@ kable(weightable(best.glm.abundancia.carga))
 ```
 
 ```{r, echo= FALSE, cache=TRUE}
-ggplot(regresion.toritos, aes(Abundancia.Esfuerzo.carga., Peso.Fresco.Fecas.carga))+theme_bw()+geom_smooth(method="lm", colour= "black")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
-
-ggplot(regresion.toritos, aes(Abundancia.Esfuerzo.carga., Peso.Fresco.Fecas.carga))+geom_point()+theme_bw()+geom_smooth(method="lm", colour= "black")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
 
 ggplot(regresion.toritos, aes(Abundancia.Esfuerzo., Peso.Fresco.Fecas.carga))+geom_point()+theme_bw()+geom_smooth(method="lm", colour= "black")+labs(x="Beetle abundance/traping effort ", y="Dung weight/stocking rate")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)
 
 ```
 
 ```{r, echo= FALSE, cache=TRUE, results='asis'}
-summary(glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
-best.glm<-glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
-best.glm2<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Peso.Fresco.Fecas.carga^2), data = regresion.toritos)
-
-best.glm3<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Dias.desde.que.se.fueron.ovinos^2), data = regresion.toritos)
-
-stargazer(best.glm, best.glm2, best.glm3, title="Results", align=TRUE, type="html")
-stargazer(best.glm, best.glm2, best.glm3, title="Results", align=TRUE, type="ascii", out="Table2.txt")
+summary(glm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+best.glm<-glm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
 
 
-pR2(glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+stargazer(best.glm, title="Results", align=TRUE, type="html")
+stargazer(best.glm, title="Results", align=TRUE, type="ascii", out="Table2.txt")
 
-summary(lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
 
-Toritos.lm<-lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
+pR2(glm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+
+summary(lm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
+
+Toritos.lm<-lm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
 
 stargazer(Toritos.lm, title="Results", align=TRUE, type="html")
 stargazer(Toritos.lm, title="Results", align=TRUE, type="text", out="Table1.txt")
@@ -207,8 +202,8 @@ prediction2<- predict(best.glm.new, newdata2, full=TRUE, se.fit=TRUE)
 
 
 pred<- data.frame(Carga= newdata$Carga, abundancia=prediction$fit, SeAbove=prediction$fit + prediction$se, SeBellow = prediction$fit - prediction$se)
-ggplot(pred, aes(Carga, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove), colour="lightgrey") + geom_line(color="black")+theme_bw()
+ggplot(pred, aes(Carga, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove), fill="grey") + geom_line(color="black")+theme_bw()
 
 pred2<- data.frame(Pendiente= newdata2$Pendiente, abundancia=prediction2$fit, SeAbove=prediction2$fit + prediction2$se, SeBellow = prediction2$fit - prediction2$se)
-ggplot(pred2, aes(Pendiente, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove), colour="lightgrey") + geom_line(color="black")+theme_bw()
+ggplot(pred2, aes(Pendiente, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove),fill='grey') + geom_line(color="black")+theme_bw()
 ```
