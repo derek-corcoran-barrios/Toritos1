@@ -19,6 +19,7 @@ library(grid)
 library(gridExtra)
 library(agricolae)
 library(stargazer)
+library(dplyr)
 ```
 
 Metemos los datos
@@ -106,6 +107,8 @@ best.glm2<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Peso.Fresco.Fecas.carga^2), d
 best.glm3<- glm(Abundancia.Esfuerzo.carga. ~ 1 + I(Dias.desde.que.se.fueron.ovinos^2), data = regresion.toritos)
 
 stargazer(best.glm, best.glm2, best.glm3, title="Results", align=TRUE, type="html")
+stargazer(best.glm, best.glm2, best.glm3, title="Results", align=TRUE, type="ascii", out="Table2.txt")
+
 
 pR2(glm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos))
 
@@ -114,6 +117,7 @@ summary(lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regr
 Toritos.lm<-lm(Abundancia.Esfuerzo.carga. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
 
 stargazer(Toritos.lm, title="Results", align=TRUE, type="html")
+stargazer(Toritos.lm, title="Results", align=TRUE, type="text", out="Table1.txt")
 
 S1T1<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S1T1.kml")
 S1T2<-getKMLcoordinates("~/Documents/Toritos1/Toritos/S1T2.kml")
@@ -171,4 +175,40 @@ bartlett.test(Peso.pasto~Tratamiento, data=Toritos3)
 
 print(HSD.test(Toritos3$Peso.pasto, Toritos3$Tratamiento, 16, 8832, alpha = 0.05, group=TRUE))
 
+```
+
+```{r, echo= FALSE, cache=TRUE, results='asis'}
+regresion.toritos2<- mutate(regresion.toritos, peso.fresco.fecas = Peso.Fresco.Fecas.carga*Carga)
+
+glm.toritos.abundancia.new<-glm(Abundancia.Esfuerzo. ~ Carga + peso.fresco.fecas + Pendiente + Dias.desde.que.se.fueron.ovinos + I(Carga^2) + I(peso.fresco.fecas^2) + I(Pendiente^2) + I(Dias.desde.que.se.fueron.ovinos^2), data= regresion.toritos2)
+
+best.glm.abundancia.new <- glmulti(glm.toritos.abundancia.new , level = 1, method = "h", crit = "aicc", confsetsize = 5, plotty = FALSE, report = FALSE, chunks=3)
+
+kable(weightable(best.glm.abundancia.new))
+
+best.glm.new<-glm(Abundancia.Esfuerzo. ~ 1 + Pendiente + I(Carga^2), data=regresion.toritos2)	
+
+
+stargazer(best.glm.new, title="Results", align=TRUE, type="html")
+
+stargazer(best.glm.new, title="Results", align=TRUE, type="ascii", out="Table3.txt")
+```
+
+```{r, echo= FALSE, cache=TRUE, results='asis'}
+nseq <- function(x, len = length(x)) seq(min(x, na.rm = TRUE), max(x, na.rm=TRUE), length = len)
+
+newdata <- as.data.frame(lapply(lapply(regresion.toritos2, mean), rep, 30))
+newdata$Carga<- nseq(regresion.toritos2$Carga, nrow(newdata))
+newdata2 <- as.data.frame(lapply(lapply(regresion.toritos2, mean), rep, 30))
+newdata2$Pendiente<- nseq(regresion.toritos2$Pendiente, nrow(newdata2))
+
+prediction<- predict(best.glm.new, newdata, full=TRUE, se.fit=TRUE)
+prediction2<- predict(best.glm.new, newdata2, full=TRUE, se.fit=TRUE)
+
+
+pred<- data.frame(Carga= newdata$Carga, abundancia=prediction$fit, SeAbove=prediction$fit + prediction$se, SeBellow = prediction$fit - prediction$se)
+ggplot(pred, aes(Carga, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove), colour="lightgrey") + geom_line(color="black")+theme_bw()
+
+pred2<- data.frame(Pendiente= newdata2$Pendiente, abundancia=prediction2$fit, SeAbove=prediction2$fit + prediction2$se, SeBellow = prediction2$fit - prediction2$se)
+ggplot(pred2, aes(Pendiente, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove), colour="lightgrey") + geom_line(color="black")+theme_bw()
 ```
