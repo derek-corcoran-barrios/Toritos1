@@ -207,3 +207,39 @@ ggplot(pred, aes(Carga, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove
 pred2<- data.frame(Pendiente= newdata2$Pendiente, abundancia=prediction2$fit, SeAbove=prediction2$fit + prediction2$se, SeBellow = prediction2$fit - prediction2$se)
 ggplot(pred2, aes(Pendiente, abundancia))+geom_ribbon(aes(ymin=SeBellow, ymax=SeAbove),fill='grey') + geom_line(color="black")+theme_bw()
 ```
+
+
+```{r}
+log(regresion.toritos$Abundancia.Esfuerzo.+0.1)
+
+Toritos.exp<-lm(log(Abundancia.Esfuerzo.+0.1) ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos)
+
+summary(Toritos.exp)
+
+summary(glm(Abundancia.Esfuerzo. ~ 1 + Peso.Fresco.Fecas.carga, data = regresion.toritos, family = gaussian(link = "log"), start = c(5,0)))
+#Counts.exponential2 <- exp(predict(Toritos.exp,regresion.toritos$Abundancia.Esfuerzo.))
+ggplot(regresion.toritos, aes(Abundancia.Esfuerzo., Peso.Fresco.Fecas.carga))+theme_bw()+labs(x="Abundancia de escarabajos/Hora Trampa", y="Peso fecas/Carga ovina")+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ geom_hline(yintercept=0)+geom_smooth(method="lm")
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE, cache=TRUE}
+means.toritos=c(351.7441, 482.8687, 485.8114, 665.3333)
+toritos.plot <- barplot(means.toritos, ylim=c(0, 900), xlab="Tratamiento", ylab="Materia seca por hectarea [kg MS/ha]")
+axis(1, labels=c("Control-", "Control+", "Trat1", "Trat2"), at = toritos.plot)
+stDevs.t <- matrix(c(110.6971, 52.93513, 52.44917, 132.36302),4)
+segments(toritos.plot, means.toritos - stDevs.t, toritos.plot, means.toritos + stDevs.t, lwd=2)
+segments(toritos.plot - 0.1, means.toritos - stDevs.t, toritos.plot + 0.1, means.toritos - stDevs.t, lwd=2)
+segments(toritos.plot - 0.1, means.toritos + stDevs.t, toritos.plot + 0.1, means.toritos + stDevs.t, lwd=2)
+text(0.7, 510, "a", cex=1.2)
+text(1.9, 580, "a", cex=1.2)
+text(3.12, 580, "ab", cex=1.2)
+text(4.31, 840, "b", cex=1.2)
+```
+
+```{r, results='asis'}
+
+Toritos <- read.csv("~/Documents/Toritos1/Toritos/Toritos.csv")
+Toritos <- ((Toritos*10000)/(0.34*0.45)/1000)
+stargazer(Toritos, type='html', out="hect.html", digits = 2)
+```
